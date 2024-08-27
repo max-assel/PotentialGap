@@ -58,6 +58,9 @@ namespace potential_gap
         rbt_in_rbt.header.frame_id = cfg.robot_frame_id;
 
         log_vel_comp.set_capacity(cfg.planning.halt_size);
+
+        currentAgentCount_ = cfg.env.num_agents;
+
         return true;
     }
 

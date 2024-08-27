@@ -44,11 +44,15 @@ namespace potential_gap
         planner_name = name;
         ros::NodeHandle pnh("~/" + planner_name);
 
-        laser_sub = pnh.subscribe("/point_scan", 100, &Planner::laserScanCB, &planner);
-        inflated_laser_sub = pnh.subscribe("/inflated_point_scan", 100, &Planner::inflatedlaserScanCB, &planner);
-        feasi_laser_sub = pnh.subscribe("/inflated_point_scan", 100, &Planner::inflatedlaserScanCB, &planner);
-        pose_sub = pnh.subscribe("/odom",10, &Planner::poseCB, &planner);
         planner.initialize(pnh);
+
+        std::string robot_name = "/robot" + std::to_string(planner.getCurrentAgentCount());
+
+        laser_sub = pnh.subscribe(robot_name + "/mod_laser_0", 100, &Planner::laserScanCB, &planner);
+        // inflated_laser_sub = pnh.subscribe("/inflated_point_scan", 100, &Planner::inflatedlaserScanCB, &planner);
+        // feasi_laser_sub = pnh.subscribe("/inflated_point_scan", 100, &Planner::inflatedlaserScanCB, &planner);
+        
+        pose_sub = pnh.subscribe(robot_name + "/odom",10, &Planner::poseCB, &planner);
         initialized = true;
 
         // Setup dynamic reconfigure

@@ -15,6 +15,14 @@ namespace potential_gap {
             std::string robot_frame_id;
             std::string sensor_frame_id;
 
+            /**
+            * \brief Hyperparameters for planning environment
+            */
+            struct Environment
+            {
+                int num_agents = 0; /**< Total number of agents in environment */
+            } env;
+            
             struct GapVisualization {
                 int min_resoln;
                 bool close_gap_vis;
