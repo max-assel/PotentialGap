@@ -89,9 +89,6 @@ namespace potential_gap
 
         cmd_vel = planner.ctrlGeneration(final_traj);
 
-        cmd_vel.linear.x = 0.0;
-        cmd_vel.linear.y = -0.5;
-
         return planner.recordAndCheckVel(cmd_vel);
     }
 
