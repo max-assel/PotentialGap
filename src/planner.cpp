@@ -27,6 +27,11 @@ namespace potential_gap
         // Config Setup
         cfg.loadRosParamFromNodeHandle(unh);
 
+        ROS_INFO_STREAM("cfg.map_frame_id: " << cfg.map_frame_id);        
+        ROS_INFO_STREAM("cfg.odom_frame_id: " << cfg.odom_frame_id);        
+        ROS_INFO_STREAM("cfg.robot_frame_id: " << cfg.robot_frame_id);        
+        ROS_INFO_STREAM("cfg.sensor_frame_id: " << cfg.sensor_frame_id);        
+
         // Visualization Setup
         // Fix this later
         local_traj_pub = nh.advertise<geometry_msgs::PoseArray>("relevant_traj", 500);
@@ -98,6 +103,8 @@ namespace potential_gap
 
     void Planner::laserScanCB(boost::shared_ptr<sensor_msgs::LaserScan const> msg)
     {
+        ROS_INFO_STREAM("[laserScanCB]");
+        
         sharedPtr_laser = msg;
 
         if (cfg.planning.planning_inflated && sharedPtr_inflatedlaser) {
@@ -142,6 +149,10 @@ namespace potential_gap
 
     void Planner::poseCB(const nav_msgs::Odometry::ConstPtr& msg)
     {
+        ROS_INFO_STREAM("[poseCB]");
+
+        updateTF();
+
         // Transform the msg to odom frame
         if(msg->header.frame_id != cfg.odom_frame_id)
         {
@@ -162,19 +173,38 @@ namespace potential_gap
 
     bool Planner::setGoal(const std::vector<geometry_msgs::PoseStamped> &plan)
     {
-        if (plan.size() == 0) return true;
-        final_goal_odom = *std::prev(plan.end());
-        tf2::doTransform(final_goal_odom, final_goal_odom, map2odom);
+        ROS_INFO_STREAM("[setGoal]");
+
+        if (plan.size() == 0) 
+            return true;
+
+        geometry_msgs::PoseStamped globalGoalMapFrame = *std::prev(plan.end());
+
+        ROS_INFO_STREAM("   sg1");
+
+        // tf2::doTransform(globalGoalMapFrame, final_goal_odom, map2odom);
+
+        ROS_INFO_STREAM("   sg2");
 
         // Store New Global Plan to Goal Selector
         goalselector->setGoal(plan);
         
-        trajvisualizer->globalPlanRbtFrame(goalselector->getOdomGlobalPlan());
+        ROS_INFO_STREAM("   sg3");
 
-        // Find Local Goal
+        // Visualize global plan in robot
+        // trajvisualizer->globalPlanRbtFrame(goalselector->getOdomGlobalPlan());
+
+        ROS_INFO_STREAM("   sg4");
+
+        // Generate global path local waypoint (furthest part along global path that we can still see)
         goalselector->updateLocalGoal(map2rbt);
+
+        ROS_INFO_STREAM("   sg5");
+
         // return local goal (odom) frame
         auto new_local_waypoint = goalselector->getCurrentLocalGoal(rbt2odom);
+
+        ROS_INFO_STREAM("   sg6");
 
         {
             // Plan New
@@ -186,8 +216,12 @@ namespace potential_gap
             }
         }
 
+        ROS_INFO_STREAM("   sg7");
+
         // Set new local goal to trajectory arbiter
         trajArbiter->updateLocalGoal(local_waypoint_odom, odom2rbt);
+
+        ROS_INFO_STREAM("   sg8");
 
         // Visualization only
         try { 
@@ -205,11 +239,15 @@ namespace potential_gap
             ROS_FATAL_STREAM("getRelevantGlobalPlan");
         }
 
+        ROS_INFO_STREAM("   sg9");
+
         return true;
     }
 
     void Planner::updateTF()
     {
+        ROS_INFO_STREAM("[updateTF]");
+
         try {
             map2rbt  = tfBuffer.lookupTransform(cfg.robot_frame_id, cfg.map_frame_id, ros::Time(0));
             rbt2map  = tfBuffer.lookupTransform(cfg.map_frame_id, cfg.robot_frame_id, ros::Time(0));
@@ -479,8 +517,8 @@ namespace potential_gap
     }
 
     geometry_msgs::PoseArray Planner::getPlanTrajectory() {
-        updateTF();
-
+        ROS_INFO_STREAM("[getPlanTrajectory()]");        
+        
         auto gap_set = gapManipulate();
         
         std::vector<geometry_msgs::PoseArray> traj_set;

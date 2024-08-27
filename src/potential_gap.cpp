@@ -22,7 +22,10 @@ PLUGINLIB_EXPORT_CLASS(potential_gap::PotentialGapPlanner, nav_core::BaseLocalPl
 
 namespace potential_gap 
 {
-    PotentialGapPlanner::PotentialGapPlanner(){}
+    PotentialGapPlanner::PotentialGapPlanner()
+    {
+        ROS_INFO_STREAM("Planner constructed");
+    }
 
     PotentialGapPlanner::~PotentialGapPlanner()
     {
@@ -31,16 +34,26 @@ namespace potential_gap
 
     bool PotentialGapPlanner::isGoalReached()
     {
+        ROS_INFO_STREAM("[isGoalReached()]");
+
         return planner.isGoalReached();
     }
 
     bool PotentialGapPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> & plan)
     {
-        return planner.setGoal(plan);
+        ROS_INFO_STREAM("[setPlan()]");
+
+        bool success = planner.setGoal(plan);
+
+        ROS_INFO_STREAM("       success: " << success); 
+        
+        return success;
     }
 
     void PotentialGapPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
     {
+        ROS_INFO_STREAM("[initialize()]");
+
         planner_name = name;
         ros::NodeHandle pnh("~/" + planner_name);
 
@@ -63,6 +76,8 @@ namespace potential_gap
 
     bool PotentialGapPlanner::computeVelocityCommands(geometry_msgs::Twist & cmd_vel)
     {
+        ROS_INFO_STREAM("[computeVelocityCommands()]");
+
         if (!planner.initialized())
         {
             ros::NodeHandle pnh("~/" + planner_name);

@@ -1,4 +1,8 @@
 PotentialGapPlanner:
+    goal_tolerance: 0.5
+    yaw_goal_tolerance: 3.15 
+    xy_goal_tolerance: .1    
+    
     min_resoln: 1
     gap_diff: 0.1
     global_plan_lookup_increment: 30
@@ -34,7 +38,7 @@ PotentialGapPlanner:
     r_norm_offset: 0
 
     synthesized_frame: True
-    scale: 0.8
+    scale: 1.0
     integrate_maxt: 10
     integrate_stept: 0.01
 

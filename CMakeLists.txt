@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   base_local_planner
   pluginlib
   dynamic_reconfigure
-  egocircle
+  # egocircle
   geometry_msgs
   nav_msgs
   roscpp
