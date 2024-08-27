@@ -388,7 +388,7 @@ namespace potential_gap{
 
         if(holonomic)
         {
-            v_ang_fb = v_ang_fb + v_ang_const;
+            // v_ang_fb = v_ang_fb + v_ang_const;
             v_lin_x_fb = abs(theta_error) > M_PI / 3? 0 : v_lin_x_fb + v_lin_x_const + k_po_ * u_add_x;
             v_lin_y_fb = abs(theta_error) > M_PI / 3? 0 : v_lin_y_fb + v_lin_y_const + k_po_ * u_add_y;
 
@@ -397,13 +397,13 @@ namespace potential_gap{
         }
         else
         {
-            v_ang_fb = v_ang_fb + v_lin_y_fb + k_po_turn_ * u_add_y + v_ang_const;
+            // v_ang_fb = v_ang_fb + v_lin_y_fb + k_po_turn_ * u_add_y + v_ang_const;
             v_lin_x_fb = v_lin_x_fb + v_lin_x_const + k_po_ * u_add_x;
 
             if (projection_operator && min_dist_ang > - M_PI / 4 && min_dist_ang < M_PI / 4 && min_dist < cfg_->rbt.r_inscr)
             {
                 v_lin_x_fb = 0;
-                v_ang_fb *= 2;
+                // v_ang_fb *= 2;
             }
 
             v_lin_y_fb = 0;
@@ -414,7 +414,7 @@ namespace potential_gap{
 
         cmd_vel.linear.x = std::max(-cfg_->control.vx_absmax, std::min(cfg_->control.vx_absmax, v_lin_x_fb));
         cmd_vel.linear.y = std::max(-cfg_->control.vy_absmax, std::min(cfg_->control.vy_absmax, v_lin_y_fb));
-        cmd_vel.angular.z = v_ang_fb;
+        // cmd_vel.angular.z = v_ang_fb;
         return cmd_vel;
     }
 

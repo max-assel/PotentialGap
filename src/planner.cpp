@@ -27,11 +27,6 @@ namespace potential_gap
         // Config Setup
         cfg.loadRosParamFromNodeHandle(unh);
 
-        ROS_INFO_STREAM("cfg.map_frame_id: " << cfg.map_frame_id);        
-        ROS_INFO_STREAM("cfg.odom_frame_id: " << cfg.odom_frame_id);        
-        ROS_INFO_STREAM("cfg.robot_frame_id: " << cfg.robot_frame_id);        
-        ROS_INFO_STREAM("cfg.sensor_frame_id: " << cfg.sensor_frame_id);        
-
         // Visualization Setup
         // Fix this later
         local_traj_pub = nh.advertise<geometry_msgs::PoseArray>("relevant_traj", 500);
@@ -80,6 +75,10 @@ namespace potential_gap
         double dx = final_goal_odom.pose.position.x - current_pose_.position.x;
         double dy = final_goal_odom.pose.position.y - current_pose_.position.y;
         bool result = sqrt(pow(dx, 2) + pow(dy, 2)) < cfg.goal.goal_tolerance;
+
+        ROS_INFO_STREAM(" global goal distance: " << sqrt(pow(dx, 2) + pow(dy, 2)));
+        ROS_INFO_STREAM(" cfg.goal.goal_tolerance: " << cfg.goal.goal_tolerance);
+
         if (result)
         {
             ROS_INFO_STREAM("[Reset] Goal Reached");
@@ -103,8 +102,8 @@ namespace potential_gap
 
     void Planner::laserScanCB(boost::shared_ptr<sensor_msgs::LaserScan const> msg)
     {
-        ROS_INFO_STREAM("[laserScanCB]");
-        
+        // ROS_INFO_STREAM("[laserScanCB]");
+
         sharedPtr_laser = msg;
 
         if (cfg.planning.planning_inflated && sharedPtr_inflatedlaser) {
@@ -138,7 +137,7 @@ namespace potential_gap
             local_goal = goalselector->getCurrentLocalGoal(rbt2odom);
             goalvisualizer->localGoal(local_goal);
         }
-        
+
         trajArbiter->updateEgoCircle(msg);
         trajArbiter->updateLocalGoal(local_goal, odom2rbt);
 
@@ -149,7 +148,7 @@ namespace potential_gap
 
     void Planner::poseCB(const nav_msgs::Odometry::ConstPtr& msg)
     {
-        ROS_INFO_STREAM("[poseCB]");
+        // ROS_INFO_STREAM("[poseCB]");
 
         updateTF();
 
@@ -173,38 +172,26 @@ namespace potential_gap
 
     bool Planner::setGoal(const std::vector<geometry_msgs::PoseStamped> &plan)
     {
-        ROS_INFO_STREAM("[setGoal]");
+        // ROS_INFO_STREAM("[setGoal]");
 
-        if (plan.size() == 0) 
+        if (plan.size() == 0)
             return true;
 
         geometry_msgs::PoseStamped globalGoalMapFrame = *std::prev(plan.end());
 
-        ROS_INFO_STREAM("   sg1");
-
-        // tf2::doTransform(globalGoalMapFrame, final_goal_odom, map2odom);
-
-        ROS_INFO_STREAM("   sg2");
+        tf2::doTransform(globalGoalMapFrame, final_goal_odom, map2odom);
 
         // Store New Global Plan to Goal Selector
         goalselector->setGoal(plan);
-        
-        ROS_INFO_STREAM("   sg3");
 
         // Visualize global plan in robot
         // trajvisualizer->globalPlanRbtFrame(goalselector->getOdomGlobalPlan());
 
-        ROS_INFO_STREAM("   sg4");
-
         // Generate global path local waypoint (furthest part along global path that we can still see)
         goalselector->updateLocalGoal(map2rbt);
 
-        ROS_INFO_STREAM("   sg5");
-
         // return local goal (odom) frame
         auto new_local_waypoint = goalselector->getCurrentLocalGoal(rbt2odom);
-
-        ROS_INFO_STREAM("   sg6");
 
         {
             // Plan New
@@ -216,15 +203,11 @@ namespace potential_gap
             }
         }
 
-        ROS_INFO_STREAM("   sg7");
-
         // Set new local goal to trajectory arbiter
         trajArbiter->updateLocalGoal(local_waypoint_odom, odom2rbt);
 
-        ROS_INFO_STREAM("   sg8");
-
         // Visualization only
-        try { 
+        try {
             auto traj = goalselector->getRelevantGlobalPlan(map2rbt);
             geometry_msgs::PoseArray pub_traj;
             if (traj.size() > 0) {
@@ -239,14 +222,12 @@ namespace potential_gap
             ROS_FATAL_STREAM("getRelevantGlobalPlan");
         }
 
-        ROS_INFO_STREAM("   sg9");
-
         return true;
     }
 
     void Planner::updateTF()
     {
-        ROS_INFO_STREAM("[updateTF]");
+        // ROS_INFO_STREAM("[updateTF]");
 
         try {
             map2rbt  = tfBuffer.lookupTransform(cfg.robot_frame_id, cfg.map_frame_id, ros::Time(0));
@@ -295,7 +276,7 @@ namespace potential_gap
         return manip_set;
     }
 
-    // std::vector<geometry_msgs::PoseArray> 
+    // std::vector<geometry_msgs::PoseArray>
     std::vector<std::vector<double>> Planner::initialTrajGen(std::vector<potential_gap::Gap> vec, std::vector<geometry_msgs::PoseArray>& res) {
         boost::mutex::scoped_lock gapset(gapset_mutex);
         std::vector<geometry_msgs::PoseArray> ret_traj(vec.size());
@@ -331,7 +312,7 @@ namespace potential_gap
         }
 
         std::vector<double> result_score(prr.size());
-        
+
         try {
             if (omp_get_dynamic()) omp_set_dynamic(0);
             for (size_t i = 0; i < result_score.size(); i++) {
@@ -381,7 +362,7 @@ namespace potential_gap
                     ROS_WARN_STREAM("Old Traj length 0");
                     return incoming;
                 }
-            } 
+            }
 
             auto curr_rbt = gapTrajSyn->transformBackTrajectory(curr_traj, odom2rbt);
             curr_rbt.header.frame_id = cfg.robot_frame_id;
@@ -434,7 +415,7 @@ namespace potential_gap
         // ROS_INFO_STREAM("Ref_pose length: " << ref_pose.poses.size());
         for (size_t i = 0; i < pose_diff.size(); i++) // i will always be positive, so this is fine
         {
-            pose_diff[i] = sqrt(pow(curr.poses.at(i).position.x, 2) + 
+            pose_diff[i] = sqrt(pow(curr.poses.at(i).position.x, 2) +
                                 pow(curr.poses.at(i).position.y, 2));
         }
 
@@ -509,26 +490,26 @@ namespace potential_gap
     void Planner::rcfgCallback(potential_gap::pgConfig &config, uint32_t level)
     {
         cfg.reconfigure(config);
-        
-        // set_capacity destroys everything if different from original size, 
+
+        // set_capacity destroys everything if different from original size,
         // resize only if the new size is greater
         log_vel_comp.clear();
         log_vel_comp.set_capacity(cfg.planning.halt_size);
     }
 
     geometry_msgs::PoseArray Planner::getPlanTrajectory() {
-        ROS_INFO_STREAM("[getPlanTrajectory()]");        
-        
+        // ROS_INFO_STREAM("[getPlanTrajectory()]");
+
         auto gap_set = gapManipulate();
-        
+
         std::vector<geometry_msgs::PoseArray> traj_set;
-        
+
         auto score_set = initialTrajGen(gap_set, traj_set);
-        
+
         auto picked_traj = pickTraj(traj_set, score_set);
 
         auto final_traj = compareToOldTraj(picked_traj);
-        
+
         return final_traj;
     }
 

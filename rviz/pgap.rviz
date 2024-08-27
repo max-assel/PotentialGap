@@ -12,7 +12,9 @@ Panels:
         - /Dynamic Gap1
         - /Dynamic Gap1/Gaps1
         - /Dynamic Gap1/Gaps1/Marker1
-        - /Dynamic Gap1/Gaps1/MarkerArray3/Status1
+        - /Dynamic Gap1/Gaps1/MarkerArray3
+        - /Dynamic Gap1/Gaps1/MarkerArray5
+        - /Dynamic Gap1/Gaps1/MarkerArray6
         - /Dynamic Gap1/Trajectories1
         - /Agents1/MarkerArray26
       Splitter Ratio: 0.5
@@ -107,14 +109,6 @@ Visualization Manager:
       Displays:
         - Class: rviz/Group
           Displays:
-            - Class: rviz/Marker
-              Enabled: false
-              Marker Topic: /reachable_gaps
-              Name: Marker
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
             - Class: rviz/MarkerArray
               Enabled: true
               Marker Topic: /gap_goals
@@ -140,14 +134,13 @@ Visualization Manager:
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
-              Enabled: true
+              Enabled: false
               Marker Topic: /pg_arcs
               Name: MarkerArray
               Namespaces:
-                fin: true
-                raw: true
+                {}
               Queue Size: 100
-              Value: true
+              Value: false
             - Class: rviz/MarkerArray
               Enabled: true
               Marker Topic: /pg_markers
@@ -165,13 +158,13 @@ Visualization Manager:
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
-              Enabled: true
+              Enabled: false
               Marker Topic: /sel_gaps
               Name: MarkerArray
               Namespaces:
                 {}
               Queue Size: 100
-              Value: true
+              Value: false
           Enabled: true
           Name: Gaps
         - Class: rviz/Group
@@ -234,14 +227,6 @@ Visualization Manager:
               Shape: Arrow (Flat)
               Topic: /relevant_traj
               Unreliable: false
-              Value: true
-            - Class: rviz/MarkerArray
-              Enabled: true
-              Marker Topic: /traj_score
-              Name: MarkerArray
-              Namespaces:
-                {}
-              Queue Size: 100
               Value: true
           Enabled: true
           Name: Trajectories
@@ -541,7 +526,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 17.949214935302734
+      Distance: 19.76003646850586
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -549,9 +534,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -10.212249755859375
-        Y: 0.640745997428894
-        Z: -4.178473949432373
+        X: 5.864649772644043
+        Y: -3.91032338142395
+        Z: -4.205102920532227
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

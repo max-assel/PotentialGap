@@ -46,7 +46,7 @@ namespace potential_gap
         bool success = planner.setGoal(plan);
 
         ROS_INFO_STREAM("       success: " << success); 
-        
+
         return success;
     }
 
@@ -88,6 +88,9 @@ namespace potential_gap
         auto final_traj = planner.getPlanTrajectory();
 
         cmd_vel = planner.ctrlGeneration(final_traj);
+
+        cmd_vel.linear.x = 0.0;
+        cmd_vel.linear.y = -0.5;
 
         return planner.recordAndCheckVel(cmd_vel);
     }
