@@ -10,15 +10,17 @@
 
   <!--<include file="$(find turtlebot_navigation)/launch/includes/velocity_smoother.launch.xml"/>-->
 
+ <node pkg="tf" type="static_transform_publisher" name="world2kmap" args="0 0 0 0 0 0  map known_map 20" />
+
   <arg name="vel_topic" default="$(arg robot_namespace)/cmd_vel"/>
-  <arg name="holonomic" default="$(optenv GM_PARAM_HOLONOMIC true)"/>
-  <arg name="projection_operator" default="false"/>
+  <arg name="holonomic" default="true"/>
+  <arg name="projection_operator" default="true"/>
   
   <arg name="global_planning_freq" default="$(optenv GM_PARAM_GLOBAL_PLANNING_FREQ 1)"/>
   <arg name="controller_freq" default="$(optenv GM_PARAM_CONTROLLER_FREQ 5)"/>
   <arg name="planning_inflated" default="$(optenv GM_PARAM_PLANNING_INFLATED false)"/>
   <arg name="far_feasible" default="$(optenv GM_PARAM_FAR_FEASIBLE true)"/>
-  <arg name="full_fov" default="$(optenv GM_PARAM_FULL_FOV false)"/>
+  <arg name="full_fov" default="true"/>
   <arg name="inf_ratio" value="1.2" unless="$(arg planning_inflated)"/>
   <arg name="inf_ratio" value="0.0" if="$(arg planning_inflated)"/>
 
@@ -28,6 +30,13 @@
   <arg name="debug_prefix" value="" unless="$(arg debug)"/> <!-- valgrind - -tool=callgrind -->
   <arg name="debug_prefix" value="xterm -e gdb -ex run --args" if="$(arg debug)"/>
     
+	<!-- necessary for /move_base/make_plan service to work -->
+	<node name="known_map" pkg="map_server" type="map_server" args="$(arg map_file)" required="true">
+		<remap from="/map" to="/known_map"/>
+		<remap from="/map_metadata" to="/known_map_metadata"/>
+		<param name="frame_id" value="known_map"/>
+	</node>    
+
   <group if="$(arg simulation)">
     <node pkg="modify_stdr_scan" type="modify_stdr_scan" name="modify_stdr_scan" output="log" 
             args="$(arg robot_namespace) $(arg robot_radius)"/>

@@ -158,7 +158,7 @@ namespace potential_gap {
             planning.feasi_inflated = false;
             planning.projection_inflated = false;
             planning.planning_inflated = false;
-            planning.holonomic = false;
+            planning.holonomic = true;
             planning.full_fov = false;
             planning.projection_operator = false;
             planning.niGen_s = false;
