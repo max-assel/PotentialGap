@@ -188,16 +188,8 @@ namespace potential_gap{
         double v_lin_x_fb = 0;
         double v_lin_y_fb = 0;
 
-        if (cfg_->man.man_ctrl) {
-            ROS_INFO_STREAM("Manual Control");
-            // v_ang_fb = cfg_->man.man_theta;
-            v_lin_x_fb = cfg_->man.man_x;
-            v_lin_y_fb = cfg_->man.man_y;
-        } else {
-            // v_ang_fb = theta_error * k_turn_;
-            v_lin_x_fb = x_error * k_drive_x_;
-            v_lin_y_fb = y_error * k_drive_y_;
-        }
+        v_lin_x_fb = x_error * k_drive_x_;
+        v_lin_y_fb = y_error * k_drive_y_;
 
         float min_dist_ang = 0;
         float min_dist = 0;
@@ -274,56 +266,55 @@ namespace potential_gap{
 
             // ROS_INFO_STREAM("min_dist: " << min_dist);
 
-            if (cfg_->man.line && vec.size() > 0) {
-                // Dist to 
-                Eigen::Vector2d pt1(vec.at(0).x, vec.at(0).y);
-                Eigen::Vector2d pt2(vec.at(1).x, vec.at(1).y);
-                Eigen::Vector2d rbt(0, 0);
-                Eigen::Vector2d a = rbt - pt1;
-                Eigen::Vector2d b = pt2 - pt1;
-                Eigen::Vector2d c = rbt - pt2;
+            // if (cfg_->man.line && vec.size() > 0) {
+            //     // Dist to 
+            //     Eigen::Vector2d pt1(vec.at(0).x, vec.at(0).y);
+            //     Eigen::Vector2d pt2(vec.at(1).x, vec.at(1).y);
+            //     Eigen::Vector2d rbt(0, 0);
+            //     Eigen::Vector2d a = rbt - pt1;
+            //     Eigen::Vector2d b = pt2 - pt1;
+            //     Eigen::Vector2d c = rbt - pt2;
                 
-                if (a.dot(b) < 0) {
-                    // Dist to pt1
-                    // ROS_INFO_STREAM("Pt1");
-                    min_diff_x = - pt1(0);
-                    min_diff_y = - pt1(1);
-                    comp = projection_method(min_diff_x, min_diff_y);
-                    si_der = Eigen::Vector2d(comp(0), comp(1));
-                    prod_mul = v_err.dot(si_der);
-                } else if (c.dot(-b) < 0) {
-                    min_diff_x = - pt2(0);
-                    min_diff_y = - pt2(1);
-                    comp = projection_method(min_diff_x, min_diff_y);
-                    si_der = Eigen::Vector2d(comp(0), comp(1));
-                    prod_mul = v_err.dot(si_der);
-                } else {
-                    double line_dist = (pt1(0) * pt2(1) - pt2(0) * pt1(1)) / (pt1 - pt2).norm();
-                    double sign;
-                    sign = line_dist < 0 ? -1 : 1;
-                    line_dist *= sign;
+            //     if (a.dot(b) < 0) {
+            //         // Dist to pt1
+            //         // ROS_INFO_STREAM("Pt1");
+            //         min_diff_x = - pt1(0);
+            //         min_diff_y = - pt1(1);
+            //         comp = projection_method(min_diff_x, min_diff_y);
+            //         si_der = Eigen::Vector2d(comp(0), comp(1));
+            //         prod_mul = v_err.dot(si_der);
+            //     } else if (c.dot(-b) < 0) {
+            //         min_diff_x = - pt2(0);
+            //         min_diff_y = - pt2(1);
+            //         comp = projection_method(min_diff_x, min_diff_y);
+            //         si_der = Eigen::Vector2d(comp(0), comp(1));
+            //         prod_mul = v_err.dot(si_der);
+            //     } else {
+            //         double line_dist = (pt1(0) * pt2(1) - pt2(0) * pt1(1)) / (pt1 - pt2).norm();
+            //         double sign;
+            //         sign = line_dist < 0 ? -1 : 1;
+            //         line_dist *= sign;
                     
-                    double line_si = (r_min / line_dist - r_min / r_norm) / (1. - r_min / r_norm);
-                    double line_si_der_base = r_min / (pow(line_dist, 2) * (r_min / r_norm - 1));
-                    double line_si_der_x = - (pt2(1) - pt1(1)) / (pt1 - pt2).norm() * line_si_der_base;
-                    double line_si_der_y = - (pt1(0) - pt2(0)) / (pt1 - pt2).norm() * line_si_der_base;
-                    Eigen::Vector2d der(line_si_der_x, line_si_der_y);
-                    der /= der.norm();
-                    comp = Eigen::Vector3d(der(0), der(1), line_si);
-                    si_der = der;
-                    si_der(1) /= 3;
-                    prod_mul = v_err.dot(si_der);
-                }
+            //         double line_si = (r_min / line_dist - r_min / r_norm) / (1. - r_min / r_norm);
+            //         double line_si_der_base = r_min / (pow(line_dist, 2) * (r_min / r_norm - 1));
+            //         double line_si_der_x = - (pt2(1) - pt1(1)) / (pt1 - pt2).norm() * line_si_der_base;
+            //         double line_si_der_y = - (pt1(0) - pt2(0)) / (pt1 - pt2).norm() * line_si_der_base;
+            //         Eigen::Vector2d der(line_si_der_x, line_si_der_y);
+            //         der /= der.norm();
+            //         comp = Eigen::Vector3d(der(0), der(1), line_si);
+            //         si_der = der;
+            //         si_der(1) /= 3;
+            //         prod_mul = v_err.dot(si_der);
+            //     }
 
-            } else {
-                min_diff_x = - min_x;
-                min_diff_y = - min_y;
-                comp = projection_method(min_diff_x, min_diff_y);
-                si_der = Eigen::Vector2d(comp(0), comp(1));
-                si_der(1) /= 3;
-                prod_mul = v_err.dot(si_der);
-            }
-
+            // } else {
+            min_diff_x = - min_x;
+            min_diff_y = - min_y;
+            comp = projection_method(min_diff_x, min_diff_y);
+            si_der = Eigen::Vector2d(comp(0), comp(1));
+            si_der(1) /= 3;
+            prod_mul = v_err.dot(si_der);
+            // }
 
             if(comp(2) >= 0 && prod_mul <= 0)
             {

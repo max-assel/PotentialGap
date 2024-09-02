@@ -30,10 +30,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/pg.cfg
-)
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -76,7 +72,7 @@ add_library(potential_gap
   src/gap_manip.cpp
   src/trajectory_controller.cpp
   ) 
-add_dependencies(potential_gap ${PROJECT_NAME}_gencfg)
+
 target_compile_options(potential_gap PRIVATE ${OpenMP_FLAGS})
 target_link_libraries(potential_gap
 ${catkin_LIBRARIES}
