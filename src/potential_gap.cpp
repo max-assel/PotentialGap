@@ -106,7 +106,7 @@ namespace potential_gap
 
     bool PotentialGapPlanner::computeVelocityCommands(geometry_msgs::Twist & cmd_vel)
     {
-        ROS_INFO_STREAM("[DynamicGapPlanner::computeVelocityCommands(short)]");
+        ROS_INFO_STREAM("[PotentialGapPlanner::computeVelocityCommands(short)]");
 
         std::string dummy_message;
         geometry_msgs::PoseStamped dummy_pose;
