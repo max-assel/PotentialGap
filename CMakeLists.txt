@@ -78,3 +78,4 @@ target_link_libraries(potential_gap
 ${catkin_LIBRARIES}
 ${OpenMP_LIBS}
 )
+add_dependencies(potential_gap ${PROJECT_NAME}_generate_messages_cpp)
