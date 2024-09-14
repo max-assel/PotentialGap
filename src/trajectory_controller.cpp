@@ -124,6 +124,54 @@ namespace potential_gap{
         return abs(double(pow(l1, 2) + pow(l2, 2) - 2 * l1 * l2 * std::cos(t1 - t2)));
     }
 
+
+    /*
+    Taken from the code provided in stdr_simulator repo. Probably does not perform too well.
+    */
+    geometry_msgs::Twist TrajectoryController::obstacleAvoidanceControlLaw(const sensor_msgs::LaserScan & scan_) 
+    {
+        ROS_INFO_STREAM_NAMED("Controller", "obstacle avoidance control");
+        double safeDirX = 0;
+        double safeDirY = 0;                                   
+        
+        double half_scan = double(scan_.ranges.size() / 2);
+        float angle_increment = (2 * M_PI) / (scan_.ranges.size() - 1);
+
+        double scanRange = 0.0, scanTheta = 0.0;
+        for (int i = 0; i < scan_.ranges.size(); i++) 
+        {
+            scanRange = scan_.ranges.at(i);
+            scanTheta = ((double) i - half_scan) * angle_increment; // * M_PI / half_num_scan;
+
+
+            safeDirX += (-1.0 * std::cos(scanTheta) / pow(scanRange, 2));
+            safeDirY += (-1.0 * std::sin(scanTheta) / pow(scanRange, 2));
+        }
+
+        safeDirX /= scan_.ranges.size();
+        safeDirY /= scan_.ranges.size();
+
+        double cmdVelX = safeDirX;
+        double cmdVelY = safeDirY;
+        double cmdVelTheta = 0.0;
+
+
+        ROS_INFO_STREAM_NAMED("Controller", "raw safe vels: " << cmdVelX << ", " << cmdVelY);
+        ROS_INFO_STREAM_NAMED("Controller", "weighted safe vels: " << cmdVelX << ", " << cmdVelY);
+
+        cmdVelX = std::max(-cfg_->control.vx_absmax, std::min(cfg_->control.vx_absmax, cmdVelX));
+        cmdVelY = std::max(-cfg_->control.vy_absmax, std::min(cfg_->control.vy_absmax, cmdVelY));
+
+        ROS_INFO_STREAM_NAMED("Controller", "final safe vels: " << cmdVelX << ", " << cmdVelY);
+
+        geometry_msgs::Twist cmdVel = geometry_msgs::Twist();
+        cmdVel.linear.x = cmdVelX;
+        cmdVel.linear.y = cmdVelY; 
+        cmdVel.angular.z = cmdVelTheta;    
+
+        return cmdVel;
+    }
+
     geometry_msgs::Twist TrajectoryController::controlLaw(
         geometry_msgs::Pose current, nav_msgs::Odometry desired,
         sensor_msgs::LaserScan inflated_egocircle, geometry_msgs::PoseStamped rbt_in_cam_lc

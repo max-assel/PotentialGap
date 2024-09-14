@@ -479,28 +479,38 @@ namespace potential_gap
         if (!haveTFs)
             return geometry_msgs::Twist();
         
-        // Know Current Pose
-        geometry_msgs::PoseStamped curr_pose_local;
-        curr_pose_local.header.frame_id = cfg.robot_frame_id;
-        curr_pose_local.pose.orientation.w = 1;
-        geometry_msgs::PoseStamped curr_pose_odom;
-        curr_pose_odom.header.frame_id = cfg.odom_frame_id;
-        tf2::doTransform(curr_pose_local, curr_pose_odom, rbt2odom);
-        geometry_msgs::Pose curr_pose = curr_pose_odom.pose;
-
-        auto orig_ref = trajController->trajGen(traj);
-        ctrl_idx = trajController->targetPoseIdx(curr_pose, orig_ref);
-        nav_msgs::Odometry ctrl_target_pose;
-        ctrl_target_pose.header = orig_ref.header;
-        ctrl_target_pose.pose.pose = orig_ref.poses.at(ctrl_idx);
-        ctrl_target_pose.twist.twist = orig_ref.twist.at(ctrl_idx);
-
         sensor_msgs::LaserScan stored_scan_msgs = *sharedPtr_laser.get();
 
-        geometry_msgs::PoseStamped rbt_in_cam_lc = rbt_in_cam;
-        auto cmd_vel = trajController->controlLaw(curr_pose, ctrl_target_pose, stored_scan_msgs, rbt_in_cam_lc);
+        if (traj.poses.size() < 2) // OBSTACLE AVOIDANCE CONTROL 
+        { 
+            ROS_INFO_STREAM_NAMED("Planner", "Available Execution Traj length: " << traj.poses.size() << " < 2, obstacle avoidance control chosen.");
+            auto cmd_vel = trajController->obstacleAvoidanceControlLaw(stored_scan_msgs);
+            return cmd_vel;
+        } else
+        {
 
-        return cmd_vel;
+            // Know Current Pose
+            geometry_msgs::PoseStamped curr_pose_local;
+            curr_pose_local.header.frame_id = cfg.robot_frame_id;
+            curr_pose_local.pose.orientation.w = 1;
+            geometry_msgs::PoseStamped curr_pose_odom;
+            curr_pose_odom.header.frame_id = cfg.odom_frame_id;
+            tf2::doTransform(curr_pose_local, curr_pose_odom, rbt2odom);
+            geometry_msgs::Pose curr_pose = curr_pose_odom.pose;
+
+            auto orig_ref = trajController->trajGen(traj);
+            ctrl_idx = trajController->targetPoseIdx(curr_pose, orig_ref);
+            nav_msgs::Odometry ctrl_target_pose;
+            ctrl_target_pose.header = orig_ref.header;
+            ctrl_target_pose.pose.pose = orig_ref.poses.at(ctrl_idx);
+            ctrl_target_pose.twist.twist = orig_ref.twist.at(ctrl_idx);
+
+
+            geometry_msgs::PoseStamped rbt_in_cam_lc = rbt_in_cam;
+            auto cmd_vel = trajController->controlLaw(curr_pose, ctrl_target_pose, stored_scan_msgs, rbt_in_cam_lc);
+
+            return cmd_vel;
+        }
     }
 
     geometry_msgs::PoseArray Planner::getPlanTrajectory() {
